@@ -27,7 +27,7 @@ jobs:
         with:
           # Specify the private repository to check out.
           # IMPORTANT: Replace 'YourGitHubUsername' with your actual GitHub username.
-          repository: ishan-6955/secret-react-tests
+          repository: CyberforceHQ/secret-react-tests
 
           # This token is a secret we will create in Phase 3. It grants this workflow
           # permission to access your private repository.
