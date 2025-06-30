@@ -1,9 +1,11 @@
 # A descriptive name for your workflow, which will appear in the GitHub Actions UI.
 name: Run Secure Lab Tests
 
-# This section defines the trigger for the workflow.
-# 'on: push' means this workflow will run every time code is pushed to any branch in this repository.
-on: push
+# This workflow will now ONLY run when triggered manually via the UI
+on:
+  workflow_dispatch:
+    # We can define inputs that the API can send, but for now, we don't need any.
+    inputs: {}
 
 # This section defines the jobs that will be run. We only have one job named 'test'.
 jobs:
