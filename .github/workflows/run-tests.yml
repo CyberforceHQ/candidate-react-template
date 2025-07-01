@@ -2,7 +2,10 @@
 name: Run Secure Lab Tests
 
 # This workflow will now ONLY run when triggered manually via the UI
-on: push
+on:
+  workflow_dispatch:
+    # We can define inputs that the API can send, but for now, we don't need any.
+    inputs: {}
 
 # This section defines the jobs that will be run. We only have one job named 'test'.
 jobs:
