@@ -55,31 +55,21 @@ jobs:
         run: cd private-tests && npm install
 
       # Step 6: Run the tests.
-      - name: 6. Run Tests and Save Raw Log
-        # We don't need an 'id' for this step anymore.
-        # The '|| true' at the end is critical. It ensures that if 'npm test' fails
-        # (exits with a non-zero code), the 'true' command is executed, which exits with 0.
-        # This prevents the workflow from stopping here and allows it to proceed to the parsing step.
-        run: cd private-tests && npm test > ../raw_test_output.txt || true
-
-      # Step 7: Parse the test output and create results.json.
-      # This step uses a combination of shell tools to create a clean JSON file from the test output.
-      - name: 7. Parse Log and Create JSON Result
+      - name: 6. Run, Process, and Send Result
+        env:
+          BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
+          REPO_NAME: ${{ github.repository }}
         run: |
-          # Instead of echoing a variable, we now use 'cat' to read the contents of our log file.
-          # The rest of the pipeline (grep and jq) remains exactly the same, as it was already correct.
-          cat raw_test_output.txt | \
-          grep -E 'PASSED:|FAILED:' | \
-          jq -R 'split(" | ") | {test: .[0] | split(": ")[1], status: .[0] | split(": ")[0], key: (if .[1] then .[1] | split(": ")[1] else null end)}' | \
-          jq -s '.' > results.json
+          chmod +x private-tests/process-results.js
 
-      # Step 8: Upload the results.json file as a downloadable artifact.
-      - name: 8. Upload Results Artifact
-        # This step will also run even if tests failed, allowing us to see partial results.
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          # The name of the artifact that will appear in the GitHub UI.
-          name: test-results
-          # The path to the file to upload.
-          path: results.json
+          FINAL_PAYLOAD=$(cd private-tests && npm test || true | ./process-results.js "$REPO_NAME")
+
+          echo "--- FINAL PAYLOAD (Generated via direct pipe) ---"
+          echo "$FINAL_PAYLOAD"
+          echo "--------------------------------------------------"
+
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-API-Key: $BACKEND_API_KEY" \
+            -d "$FINAL_PAYLOAD" \
+            https://labs-dev-api.cyberforcehq.com/update-test-case-status
