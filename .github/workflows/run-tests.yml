@@ -57,4 +57,5 @@ jobs:
       - name: 6. Run Tests and Save Raw Log
         env:
           REPO_NAME: ${{ github.repository }}
+          BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
         run: cd private-tests && npm test || true
