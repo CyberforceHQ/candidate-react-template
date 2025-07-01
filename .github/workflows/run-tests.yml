@@ -51,18 +51,21 @@ jobs:
       - name: 5. Install Test Suite Dependencies
         run: cd private-tests && npm install
 
-      # Step 6: Run the tests.
-      - name: 6. Run, Process, and Send Result
+      - name: 6. Run Tests and Save Raw Log
+        run: cd private-tests && npm test > ../raw_test_output.txt || true
+
+      # Step 7: Process the log file and send the clean result to the Backend API
+      - name: 7. Process Log and Send Result
         env:
           REPO_NAME: ${{ github.repository }}
         run: |
           chmod +x private-tests/process-results.js
 
-          FINAL_PAYLOAD=$(cd private-tests && npm test || true | ./process-results.js "$REPO_NAME")
+          FINAL_PAYLOAD=$(cat raw_test_output.txt | private-tests/process-results.js "$REPO_NAME")
 
-          echo "--- FINAL PAYLOAD (Generated via direct pipe) ---"
+          echo "--- FINAL PAYLOAD ---"
           echo "$FINAL_PAYLOAD"
-          echo "--------------------------------------------------"
+          echo "---------------------"
 
           curl -X POST \
             -H "Content-Type: application/json" \
