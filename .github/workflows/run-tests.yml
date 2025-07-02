@@ -29,7 +29,7 @@ jobs:
         with:
           # Specify the private repository to check out.
           # IMPORTANT: Replace 'YourGitHubUsername' with your actual GitHub username.
-          repository: CyberforceHQ/secret-react-tests
+          repository: CyberforceHQ/React-multistep-form-test
 
           # This token is a secret we will create in Phase 3. It grants this workflow
           # permission to access your private repository.
