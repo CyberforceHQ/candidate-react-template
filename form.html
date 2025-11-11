@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Step Form</title>
+    <link rel="stylesheet" href="form.css">
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-card">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Personal Details</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Account Setup</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Review</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Personal Details -->
+            <div class="step-content active" id="step1">
+                <h1 class="form-title">Step 1: Personal Details</h1>
+                
+                <form id="step1Form" novalidate>
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input 
+                            type="text" 
+                            id="fullName" 
+                            name="fullName" 
+                            required
+                            aria-required="true"
+                        >
+                        <span class="error-message" id="fullNameError">Full Name is required.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required
+                            aria-required="true"
+                        >
+                        <span class="error-message" id="emailError">Email Address is required.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input 
+                            type="tel" 
+                            id="phone" 
+                            name="phone" 
+                            required
+                            aria-required="true"
+                            pattern="[0-9]{10}"
+                            maxlength="10"
+                        >
+                        <span class="error-message" id="phoneError">Phone Number is required.</span>
+                        <span class="helper-text">Must be 10 digits (e.g., 1234567890).</span>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="next-button" onclick="validateAndNext(1)">Next</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 2: Account Setup -->
+            <div class="step-content" id="step2">
+                <h1 class="form-title">Step 2: Account Setup</h1>
+                
+                <form id="step2Form" novalidate>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            required
+                            aria-required="true"
+                            minlength="4"
+                        >
+                        <span class="error-message" id="usernameError">Username must be at least 4 characters long.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required
+                            aria-required="true"
+                            minlength="8"
+                        >
+                        <span class="error-message" id="passwordError">Password must contain one number and one special character.</span>
+                        <span class="helper-text">Must be at least 8 characters with one number and one special character.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input 
+                            type="password" 
+                            id="confirmPassword" 
+                            name="confirmPassword" 
+                            required
+                            aria-required="true"
+                        >
+                        <span class="error-message" id="confirmPasswordError">Passwords do not match.</span>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="prev-button" onclick="goToStep(1)">Back</button>
+                        <button type="button" class="next-button" onclick="validateAndNext(2)">Next</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 3: Review -->
+            <div class="step-content" id="step3">
+                <h1 class="form-title">Step 3: Review</h1>
+                
+                <div class="review-section">
+                    <div class="review-item">
+                        <strong>Full Name:</strong>
+                        <span id="reviewFullName"></span>
+                    </div>
+                    <div class="review-item">
+                        <strong>Email Address:</strong>
+                        <span id="reviewEmail"></span>
+                    </div>
+                    <div class="review-item">
+                        <strong>Phone Number:</strong>
+                        <span id="reviewPhone"></span>
+                    </div>
+                    <div class="review-item">
+                        <strong>Username:</strong>
+                        <span id="reviewUsername"></span>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="prev-button" onclick="goToStep(2)">Previous</button>
+                    <button type="button" class="submit-button" onclick="submitForm()">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 3;
+        const formData = {};
+
+        // Initialize form
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeValidation();
+            
+            // Prevent form submission
+            document.getElementById('step1Form').addEventListener('submit', (e) => {
+                e.preventDefault();
+            });
+            document.getElementById('step2Form').addEventListener('submit', (e) => {
+                e.preventDefault();
+            });
+        });
+
+        function initializeValidation() {
+            // Step 1 validation
+            const step1Inputs = document.querySelectorAll('#step1Form input[required]');
+            step1Inputs.forEach(input => {
+                input.addEventListener('blur', () => {
+                    validateField(input, 1);
+                });
+                input.addEventListener('input', () => {
+                    if (input.classList.contains('error')) {
+                        validateField(input, 1);
+                    }
+                });
+            });
+
+            // Step 2 validation
+            const step2Inputs = document.querySelectorAll('#step2Form input[required]');
+            step2Inputs.forEach(input => {
+                input.addEventListener('blur', () => {
+                    validateField(input, 2);
+                });
+                input.addEventListener('input', () => {
+                    if (input.classList.contains('error')) {
+                        validateField(input, 2);
+                    }
+                });
+            });
+
+            // Re-validate confirm password when password changes
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            if (passwordInput && confirmPasswordInput) {
+                passwordInput.addEventListener('input', () => {
+                    if (confirmPasswordInput.value) {
+                        validateField(confirmPasswordInput, 2);
+                    }
+                });
+            }
+        }
+
+        function validateField(input, step) {
+            const errorElement = document.getElementById(input.id + 'Error');
+            const value = input.value.trim();
+
+            if (input.id === 'phone') {
+                if (value === '') {
+                    showError(input, errorElement, 'Phone Number is required.');
+                    return false;
+                } else if (!/^\d{10}$/.test(value)) {
+                    showError(input, errorElement, 'Phone Number must be 10 digits.');
+                    return false;
+                } else {
+                    hideError(input, errorElement);
+                    return true;
+                }
+            } else if (input.id === 'username') {
+                if (value === '') {
+                    showError(input, errorElement, 'Username is required.');
+                    return false;
+                } else if (value.length < 4) {
+                    showError(input, errorElement, 'Username must be at least 4 characters long.');
+                    return false;
+                } else {
+                    hideError(input, errorElement);
+                    return true;
+                }
+            } else if (input.id === 'password') {
+                if (value === '') {
+                    showError(input, errorElement, 'Password is required.');
+                    return false;
+                } else if (value.length < 8) {
+                    showError(input, errorElement, 'Password must be at least 8 characters long.');
+                    return false;
+                } else if (!/\d/.test(value) || !/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value)) {
+                    showError(input, errorElement, 'Password must contain one number and one special character.');
+                    return false;
+                } else {
+                    hideError(input, errorElement);
+                    // Re-validate confirm password if it has a value
+                    const confirmPassword = document.getElementById('confirmPassword');
+                    if (confirmPassword && confirmPassword.value) {
+                        validateField(confirmPassword, 2);
+                    }
+                    return true;
+                }
+            } else if (input.id === 'confirmPassword') {
+                const password = document.getElementById('password').value;
+                if (value === '') {
+                    showError(input, errorElement, 'Please confirm your password.');
+                    return false;
+                } else if (value !== password) {
+                    showError(input, errorElement, 'Passwords do not match.');
+                    return false;
+                } else {
+                    hideError(input, errorElement);
+                    return true;
+                }
+            } else if (input.id === 'email') {
+                if (value === '') {
+                    showError(input, errorElement, 'Email Address is required.');
+                    return false;
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    showError(input, errorElement, 'Please enter a valid email address.');
+                    return false;
+                } else {
+                    hideError(input, errorElement);
+                    return true;
+                }
+            } else {
+                if (value === '') {
+                    const fieldName = input.id === 'fullName' ? 'Full Name' : 'Field';
+                    showError(input, errorElement, `${fieldName} is required.`);
+                    return false;
+                } else {
+                    hideError(input, errorElement);
+                    return true;
+                }
+            }
+        }
+
+        function validateStep(step) {
+            let isValid = true;
+            const stepForm = document.getElementById(`step${step}Form`);
+            
+            if (!stepForm) return true; // Step 3 doesn't have a form
+
+            const inputs = stepForm.querySelectorAll('input[required]');
+            // Validate all fields and show errors
+            inputs.forEach(input => {
+                const fieldValid = validateField(input, step);
+                if (!fieldValid) {
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        function validateAndNext(step) {
+            try {
+                const isValid = validateStep(step);
+                if (isValid) {
+                    saveStepData(step);
+                    goToStep(step + 1);
+                } else {
+                    // Scroll to first error
+                    const firstError = document.querySelector(`#step${step} input.error`);
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstError.focus();
+                    }
+                }
+            } catch (error) {
+                console.error('Error in validateAndNext:', error);
+                alert('An error occurred. Please check the console for details.');
+            }
+        }
+        
+        // Make functions globally accessible (will be set after goToStep is defined)
+
+        function saveStepData(step) {
+            if (step === 1) {
+                formData.fullName = document.getElementById('fullName').value.trim();
+                formData.email = document.getElementById('email').value.trim();
+                formData.phone = document.getElementById('phone').value.trim();
+            } else if (step === 2) {
+                formData.username = document.getElementById('username').value.trim();
+                // Note: We don't save password for security reasons, but it's validated
+            }
+        }
+
+        function goToStep(step) {
+            if (step < 1 || step > totalSteps) return;
+
+            // Hide all steps
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Show current step
+            document.getElementById(`step${step}`).classList.add('active');
+
+            // Update step indicator
+            document.querySelectorAll('.step').forEach((stepEl, index) => {
+                if (index + 1 <= step) {
+                    stepEl.classList.add('active');
+                } else {
+                    stepEl.classList.remove('active');
+                }
+            });
+
+            // Update step lines (lines before completed steps should be blue)
+            document.querySelectorAll('.step-line').forEach((lineEl, index) => {
+                if (index + 1 < step) {
+                    lineEl.classList.add('completed');
+                } else {
+                    lineEl.classList.remove('completed');
+                }
+            });
+
+            currentStep = step;
+
+            // Load data if going back
+            if (step === 1) {
+                if (formData.fullName) document.getElementById('fullName').value = formData.fullName;
+                if (formData.email) document.getElementById('email').value = formData.email;
+                if (formData.phone) document.getElementById('phone').value = formData.phone;
+            } else if (step === 2) {
+                if (formData.username) document.getElementById('username').value = formData.username;
+                // Password fields are not restored for security reasons
+            } else if (step === 3) {
+                // Populate review section
+                document.getElementById('reviewFullName').textContent = formData.fullName || '';
+                document.getElementById('reviewEmail').textContent = formData.email || '';
+                document.getElementById('reviewPhone').textContent = formData.phone || '';
+                document.getElementById('reviewUsername').textContent = formData.username || '';
+            }
+        }
+
+        function submitForm() {
+            // Validate all steps before submission
+            if (!validateStep(1) || !validateStep(2)) {
+                alert('Please complete all required fields before submitting.');
+                // Go back to first incomplete step
+                if (!validateStep(1)) {
+                    goToStep(1);
+                } else {
+                    goToStep(2);
+                }
+                return;
+            }
+
+            // Save all data
+            saveStepData(1);
+            saveStepData(2);
+
+            // Here you would typically send the data to a server
+            console.log('Form submitted with data:', formData);
+            alert('Form submitted successfully! Check console for data.');
+            
+            // Optionally reset form
+            // resetForm();
+        }
+
+        function showError(input, errorElement, message) {
+            input.classList.add('error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function hideError(input, errorElement) {
+            input.classList.remove('error');
+            errorElement.style.display = 'none';
+        }
+
+        // Make functions globally accessible
+        window.validateAndNext = validateAndNext;
+        window.goToStep = goToStep;
+        window.submitForm = submitForm;
+    </script>
+</body>
+</html>
+
