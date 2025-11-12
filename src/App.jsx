@@ -55,10 +55,8 @@ function App() {
       if (!formData.username.trim() || formData.username.length < 4) {
         newErrors.username = 'Username must be at least 4 characters long.';
       }
-      const hasNumber = /\d/.test(formData.password);
-      const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password);
-      if (!formData.password || formData.password.length < 8 || !hasNumber || !hasSpecialChar) {
-        newErrors.password = 'Must contain one number and one special character.';
+      if (!formData.password || formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters long.';
       }
       if (!formData.confirmPassword || formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Passwords do not match.';
